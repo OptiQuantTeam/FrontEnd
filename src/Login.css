@@ -1,0 +1,78 @@
+/* 전체 배경을 부드러운 화이트톤으로 설정 */
+.login-container {
+  background-color: #F7F7F7; /* 밝은 회색 */
+  color: #333; /* 다크 그레이 */
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* 로그인 폼 스타일 */
+.login-form {
+  background: #FFFFFF; /* 완전 화이트 */
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+  width: 350px;
+  text-align: center;
+}
+
+/* 입력 필드 스타일 */
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 600;
+}
+
+/* 🔹 입력창을 완전 화이트(#FFFFFF)로 설정 */
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #DDD;
+  border-radius: 6px;
+  background-color: #FFFFFF !important; /* 화이트 강제 적용 */
+  color: #333; /* 글자 색상 */
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-group input:focus {
+  background-color: #FAFAFA !important; /* 포커스 시 연한 회색 */
+  border: 1px solid #4A90E2; /* 포인트 블루 */
+}
+
+/* 로그인 버튼 스타일 */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4A90E2; /* 시원한 블루 */
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.login-btn:hover {
+  background-color: #357ABD; /* 좀 더 진한 블루 */
+}
+
+/* 오류 메시지 스타일 */
+.error-message {
+  color: #E74C3C; /* 빨강 */
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: bold;
+}

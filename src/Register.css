@@ -1,0 +1,87 @@
+/* 전체 배경을 부드러운 화이트톤으로 설정 1.cd frontend 2. npm start*/
+.register-container {
+    background-color: #F7F7F7; /* 밝은 회색 */
+    color: #333;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  /* 회원가입 폼 스타일 */
+  .register-form {
+    background: #FFFFFF; /* 완전 화이트 */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+    width: 350px;
+    text-align: center;
+  }
+  
+  /* 입력 필드 스타일 */
+  .input-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #DDD;
+    border-radius: 6px;
+    background: #FFFFFF; /* 완전 흰색 */
+    color: #333;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .input-group input:focus {
+    background: #FAFAFA; /* 아주 연한 회색 */
+    border: 1px solid #4A90E2; /* 포인트 블루 */
+  }
+  
+  /* 회원가입 버튼 스타일 */
+  .register-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4A90E2; /* 시원한 블루 */
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .register-btn:hover {
+    background-color: #357ABD; /* 좀 더 진한 블루 */
+  }
+  
+  /* 메시지 스타일 */
+  .message {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  /* 성공 메시지 */
+  .message.success {
+    color: #27AE60; /* 초록 */
+  }
+  
+  /* 오류 메시지 */
+  .message.error {
+    color: #E74C3C; /* 빨강 */
+  }
+  
