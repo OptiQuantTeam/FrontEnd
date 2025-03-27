@@ -39,7 +39,13 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}  # 필요한 환경 변수가 있다면 추가
+          REACT_APP_x_api_key: ${{ secrets.REACT_APP_x_api_key }}  # 필요한 환경 변수가 있다면 추가
+          REACT_APP_verifyTokenUrl: ${{ secrets.REACT_APP_verifyTokenUrl }}
+          REACT_APP_loginUrl: ${{ secrets.REACT_APP_loginUrl }} 
+          REACT_APP_registerUrl: ${{ secrets.REACT_APP_registerUrl }}
+          REACT_APP_contentUrl: ${{ secrets.REACT_APP_contentUrl }}
+          
+          
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
