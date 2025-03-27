@@ -10,6 +10,7 @@ const Login = (props) => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
 
+  console.log(loginUrl);
   const submitHandler = (event) => {
     event.preventDefault();
     if (ID.trim() === '' || password.trim() === '') {
