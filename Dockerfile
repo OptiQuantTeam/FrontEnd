@@ -9,4 +9,3 @@ RUN git clone -b master https://github.com/OptiQuantTeam/BackEnd.git .
 RUN npm install
 
 RUN npm run build
-
