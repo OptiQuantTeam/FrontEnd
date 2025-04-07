@@ -38,24 +38,24 @@ const Income = ({ incomeList }) => {
     return new Date(timestamp).toLocaleString();
   };
 
-  // 시간순 정렬 및 누적 수익 계산
-  const sortedData = [...incomeData]
+  // 그래프용 시간순 정렬 및 누적 수익 계산
+  const chartSortedData = [...incomeData]
     .sort((a, b) => a.time - b.time);
   
   let accumulator = 0;
   const chartData = {
-    labels: sortedData.map(item => formatDate(item.time)),
+    labels: chartSortedData.map(item => formatDate(item.time)),
     datasets: [
       {
         label: 'Individual Income',
-        data: sortedData.map(item => parseFloat(item.income)),
+        data: chartSortedData.map(item => parseFloat(item.income)),
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
         yAxisID: 'y',
       },
       {
         label: 'Accumulated Income',
-        data: sortedData.map(item => {
+        data: chartSortedData.map(item => {
           accumulator += parseFloat(item.income);
           return accumulator;
         }),
@@ -65,6 +65,10 @@ const Income = ({ incomeList }) => {
       }
     ]
   };
+
+  // 테이블용 최신순 정렬
+  const tableSortedData = [...incomeData]
+    .sort((a, b) => b.time - a.time);
 
   const chartOptions = {
     responsive: true,
@@ -163,7 +167,7 @@ const Income = ({ incomeList }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {incomeData.map((row, index) => (
+            {tableSortedData.map((row, index) => (
               <TableRow 
                 key={`${row.tranId}-${index}`}
                 sx={{ 

@@ -17,6 +17,9 @@ const Balance = ({ balanceList }) => {
     return timestamp ? new Date(timestamp).toLocaleString() : '-';
   };
 
+  // 시간 역순으로 정렬
+  const sortedData = [...balanceData].sort((a, b) => b.updateTime - a.updateTime);
+
   return (
     <TableContainer 
       component={Paper} 
@@ -55,7 +58,7 @@ const Balance = ({ balanceList }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {balanceData.map((row, index) => (
+          {sortedData.map((row, index) => (
             <TableRow 
               key={`${row.asset}-${index}`}
               sx={{ 

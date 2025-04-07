@@ -17,6 +17,9 @@ const ContractList = ({ contractList }) => {
     return new Date(timestamp).toLocaleString();
   };
 
+  // 시간 역순으로 정렬
+  const sortedData = [...contractData].sort((a, b) => b.time - a.time);
+
   return (
     <TableContainer 
       component={Paper} 
@@ -58,7 +61,7 @@ const ContractList = ({ contractList }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {contractData.map((row) => (
+          {sortedData.map((row) => (
             <TableRow 
               key={row.id}
               sx={{ 
