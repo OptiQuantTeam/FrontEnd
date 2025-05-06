@@ -58,7 +58,8 @@ const Content = (props) => {
     const requestBody = {
       user_id: user.user_id,
       token: token,
-      type: 'income'
+      type: 'income',
+      timestamp: new Date(new Date().setMonth(new Date().getMonth() - 1)).getTime() // 3개월 전까지의 데이터만 가져올 수 있음, 현재 달에 숫자를 빼서 이전 달의 데이터를 가져옴 (1은 한 달 전, 2는 두 달 전, 3은 세 달 전)
     };
 
     axios.post(contentUrl, requestBody, requestConfig).then(response => {
@@ -109,12 +110,14 @@ const Content = (props) => {
     const requestBody = {
       user_id: user.user_id,
       token: token,
-      type: 'contractList'
+      type: 'contractList',
+      timestamp: new Date(new Date().setMonth(new Date().getMonth() - 1)).getTime() // 6개월 전까지의 데이터만 가져올 수 있음, 현재 달에 숫자를 빼서 이전 달의 데이터를 가져옴 (1은 한 달 전, 2는 두 달 전, 3은 세 달 전...)
     };
 
     axios.post(contentUrl, requestBody, requestConfig).then(response => {
       setContent('ContractList');
       setContractList(response.data);
+      console.log(response.data);
     }).catch((error) => {
       console.log(error);
     });

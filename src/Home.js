@@ -1,7 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
+import axios from 'axios';
+
+const rootUrl = process.env.REACT_APP_rootUrl;
 
 const Home = () => {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    const requestConfig = {
+      headers: {  
+        'x-api-key': process.env.REACT_APP_x_api_key
+      },
+      signal: abortController.signal
+    };
+
+    axios.get(rootUrl, requestConfig).then((response) => {
+      setData(response.data);
+      console.log(response.data);
+    }).catch((error) => {
+      if (!axios.isCancel(error)) {
+        console.log(error);
+      }
+    });
+
+    return () => {
+      abortController.abort();
+    };
+  }, []);
+
   return (
     <div style={{ 
       display: 'flex', 

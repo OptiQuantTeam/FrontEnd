@@ -13,7 +13,7 @@ const verifyTokenUrl = process.env.REACT_APP_verifyTokenUrl;
 
 function App() {
   const [isAuthenicating, setAuthenicating] = useState(true);
-
+  
   useEffect(() => {
     const token = getToken();
     if (token === 'undefined' || token === undefined || token === null || !token) {
