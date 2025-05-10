@@ -19,11 +19,13 @@ import ContractList from './component/ContractList';
 import Setting from './component/Setting';
 import axios from 'axios';
 import Balance from './component/Balance';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const contentUrl = process.env.REACT_APP_contentUrl;
 
 const Content = (props) => {
-  const [content, setContent] = useState('Default');
+  const [content, setContent] = useState('Graph');
   const [setting, setSetting] = useState(null);
   const [incomeList, setIncomeList] = useState(null);
   const [settingType, setSettingType] = useState(null);
@@ -58,7 +60,8 @@ const Content = (props) => {
     const requestBody = {
       user_id: user.user_id,
       token: token,
-      type: 'income'
+      type: 'income',
+      timestamp: new Date(new Date().setMonth(new Date().getMonth() - 1)).getTime() // 3개월 전까지의 데이터만 가져올 수 있음, 현재 달에 숫자를 빼서 이전 달의 데이터를 가져옴 (1은 한 달 전, 2는 두 달 전, 3은 세 달 전)
     };
 
     axios.post(contentUrl, requestBody, requestConfig).then(response => {
@@ -109,12 +112,14 @@ const Content = (props) => {
     const requestBody = {
       user_id: user.user_id,
       token: token,
-      type: 'contractList'
+      type: 'contractList',
+      timestamp: new Date(new Date().setMonth(new Date().getMonth() - 1)).getTime() // 6개월 전까지의 데이터만 가져올 수 있음, 현재 달에 숫자를 빼서 이전 달의 데이터를 가져옴 (1은 한 달 전, 2는 두 달 전, 3은 세 달 전...)
     };
 
     axios.post(contentUrl, requestBody, requestConfig).then(response => {
       setContent('ContractList');
       setContractList(response.data);
+      console.log(response.data);
     }).catch((error) => {
       console.log(error);
     });
@@ -170,42 +175,13 @@ const Content = (props) => {
     <div style={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      minHeight: '100vh',
-      height: '100vh',
-      overflow: 'hidden',
+      minHeight: '80vh',
       backgroundColor: 'white'
     }}>
-      {/* 상단 헤더 */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        padding: '20px',
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e0e0e0'
-      }}>
-        <h3 style={{ margin: 0 }}>Hello {name}!</h3>
-        <Button 
-          variant="outlined" 
-          onClick={logoutHandler}
-          sx={{
-            color: '#000',
-            borderColor: '#000',
-            '&:hover': {
-              backgroundColor: '#f5f5f5',
-              borderColor: '#000'
-            }
-          }}
-        >
-          Logout
-        </Button>
-      </div>
-
       {/* 메인 콘텐츠 영역 */}
       <div style={{ 
         display: 'flex', 
         flex: 1,
-        overflow: 'hidden',
         backgroundColor: 'white'
       }}>
         {/* 왼쪽 메뉴 */}
@@ -213,8 +189,20 @@ const Content = (props) => {
           width: '250px', 
           backgroundColor: 'white',
           borderRight: '1px solid #e0e0e0',
-          overflow: 'auto'
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100%'
         }}>
+          {/* 사용자 이름 */}
+          <Box sx={{ 
+            p: 2, 
+            borderBottom: '1px solid #e0e0e0',
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              {name}
+            </Typography>
+          </Box>
+
           <List
             sx={{ 
               width: '100%',
@@ -318,13 +306,35 @@ const Content = (props) => {
               </List>
             </Collapse>
           </List>
+
+          {/* 로그아웃 버튼 */}
+          <Box sx={{ 
+            mt: 'auto', 
+            p: 2, 
+            borderTop: '1px solid #e0e0e0'
+          }}>
+            <Button 
+              variant="outlined" 
+              onClick={logoutHandler}
+              fullWidth
+              sx={{
+                color: '#000',
+                borderColor: '#000',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#000'
+                }
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
         </div>
 
         {/* 우측 콘텐츠 영역 */}
         <div style={{ 
           flex: 1, 
           padding: '20px',
-          overflow: 'auto',
           backgroundColor: 'white'
         }}>
           {content === 'Graph' && <Graph />}
