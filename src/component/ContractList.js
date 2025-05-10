@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -30,7 +30,7 @@ const ContractList = () => {
   const [loading, setLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(false);
 
-  const fetchContractData = () => {
+  const fetchContractData = useCallback(() => {
     const token = getToken();
     const user = getUser();
     if (!token || !user) {
@@ -63,23 +63,15 @@ const ContractList = () => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [selectedYear, selectedMonth]);
 
   useEffect(() => {
     fetchContractData();
-  }, [selectedMonth, selectedYear]);
+  }, [fetchContractData]);
 
   if (!contractList) return null;
 
   const contractData = contractList.data || [];
-
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-  };
 
   const formatDate = (timestamp) => {
     return new Date(timestamp).toLocaleString();
@@ -107,7 +99,6 @@ const ContractList = () => {
       default:
         break;
     }
-    fetchContractData();
     handleFilterClose();
   };
 

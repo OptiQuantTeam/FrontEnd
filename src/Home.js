@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
-import { Box, Grid, Paper, Divider } from '@mui/material';
+import { Box, Grid, Paper } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import InfoIcon from '@mui/icons-material/Info';
 
 const rootUrl = process.env.REACT_APP_rootUrl;
 
