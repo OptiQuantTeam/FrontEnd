@@ -67,7 +67,7 @@ const Home = () => {
             <Grid item xs={12} md={3}>
               <StatCard 
                 title="최고 수익률" 
-                value={`${data.profit_rate_stats.best_profit_rate.toFixed(2)}%`}
+                value={`${data?.profit_rate_stats?.best_profit_rate?.toFixed(2) || '0.00'}%`}
                 icon={<TrendingUpIcon color="success" />}
                 color="success.main"
               />
@@ -75,15 +75,15 @@ const Home = () => {
             <Grid item xs={12} md={3}>
               <StatCard 
                 title="평균 수익률" 
-                value={`${data.profit_rate_stats.mean_profit_rate.toFixed(2)}%`}
-                icon={<TimelineIcon color={data.profit_rate_stats.mean_profit_rate >= 0 ? "success" : "error"} />}
-                color={data.profit_rate_stats.mean_profit_rate >= 0 ? "success.main" : "error.main"}
+                value={`${data?.profit_rate_stats?.mean_profit_rate?.toFixed(2) || '0.00'}%`}
+                icon={<TimelineIcon color={(data?.profit_rate_stats?.mean_profit_rate || 0) >= 0 ? "success" : "error"} />}
+                color={(data?.profit_rate_stats?.mean_profit_rate || 0) >= 0 ? "success.main" : "error.main"}
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <StatCard 
                 title="최고 거래 성공률" 
-                value={`${(data.training_results.max_episode_win_rate * 100).toFixed(2)}%`}
+                value={`${((data?.training_results?.max_episode_win_rate || 0) * 100).toFixed(2)}%`}
                 icon={<AssessmentIcon color="warning" />}
                 color="warning.main"
               />
@@ -91,9 +91,9 @@ const Home = () => {
             <Grid item xs={12} md={3}>
               <StatCard 
                 title="평균 거래 성공률" 
-                value={`${(data.training_results.mean_episode_win_rate * 100).toFixed(2)}%`}
-                icon={<AssessmentIcon color={data.training_results.mean_episode_win_rate >= 0.5 ? "success" : "info"} />}
-                color={data.training_results.mean_episode_win_rate >= 0.5 ? "success.main" : "info.main"}
+                value={`${((data?.training_results?.mean_episode_win_rate || 0) * 100).toFixed(2)}%`}
+                icon={<AssessmentIcon color={(data?.training_results?.mean_episode_win_rate || 0) >= 0.5 ? "success" : "info"} />}
+                color={(data?.training_results?.mean_episode_win_rate || 0) >= 0.5 ? "success.main" : "info.main"}
               />
             </Grid>
           </Grid>
