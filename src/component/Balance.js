@@ -8,7 +8,6 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 const Balance = ({ balanceList }) => {
-    console.log(balanceList);
   if (!balanceList) return null;
 
   const balanceData = balanceList.data || [];

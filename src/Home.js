@@ -20,10 +20,9 @@ const Home = () => {
       },
       signal: abortController.signal
     };
-    console.log(homeUrl);
+
     axios.get(homeUrl, requestConfig).then((response) => {
       setData(response.data);
-      console.log(response.data);
     }).catch((error) => {
       if (!axios.isCancel(error)) {
         console.log(error);
