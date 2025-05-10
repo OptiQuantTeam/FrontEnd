@@ -6,7 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 
-const rootUrl = process.env.REACT_APP_rootUrl;
+const homeUrl = process.env.REACT_APP_homeUrl;
 
 const Home = () => {
   const [data, setData] = useState(null);
@@ -21,7 +21,7 @@ const Home = () => {
       signal: abortController.signal
     };
 
-    axios.get(rootUrl, requestConfig).then((response) => {
+    axios.get(homeUrl, requestConfig).then((response) => {
       setData(response.data);
       console.log(response.data);
     }).catch((error) => {
