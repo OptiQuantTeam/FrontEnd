@@ -74,7 +74,7 @@ const Graph = () => {
       token: token,
       type: 'futureBalance'
     };
-    console.log(contentUrl);
+    
     Promise.all([
       axios.post(contentUrl, incomeRequestBody, requestConfig),
       axios.post(contentUrl, balanceRequestBody, requestConfig)
