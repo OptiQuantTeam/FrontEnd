@@ -95,13 +95,6 @@ const Graph = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-  };
 
   const handleFilterOpen = () => {
     setOpenFilter(true);
@@ -298,7 +291,6 @@ const Graph = () => {
 
   // 각 구간별 자산 계산
   const intervalData = dateLabels.map((_, index) => {
-    const intervalStart = index === 0 ? startDate.getTime() : startDate.getTime() + interval * index;
     const intervalEnd = index === 9 ? endDate.getTime() : startDate.getTime() + interval * (index + 1);
     
     // 해당 구간 이후의 수익 합계 계산

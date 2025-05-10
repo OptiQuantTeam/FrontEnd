@@ -43,7 +43,7 @@ const Login = (props) => {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container" style={{ minHeight: '80vh', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <form className="login-form" onSubmit={submitHandler}>
         <h2>Login</h2>
         <div className="input-group">

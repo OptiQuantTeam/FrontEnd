@@ -49,7 +49,7 @@ const Register = () => {
   };
 
   return (
-    <div className="register-container">
+    <div className="register-container" style={{ minHeight: '80vh', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <form className="register-form" onSubmit={submitHandler}>
         <h2>Register</h2>
         <div className="input-group">
