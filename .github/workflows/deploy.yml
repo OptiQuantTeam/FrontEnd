@@ -39,6 +39,7 @@ jobs:
         run: npm run build
         env:
           REACT_APP_x_api_key: ${{ secrets.REACT_APP_x_api_key }}  # 필요한 환경 변수가 있다면 추가
+          REACT_APP_homeUrl: ${{ secrets.REACT_APP_homeUrl }}
           REACT_APP_verifyTokenUrl: ${{ secrets.REACT_APP_verifyTokenUrl }}
           REACT_APP_loginUrl: ${{ secrets.REACT_APP_loginUrl }} 
           REACT_APP_registerUrl: ${{ secrets.REACT_APP_registerUrl }}
