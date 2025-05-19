@@ -105,6 +105,14 @@ const Income = () => {
           setSelectedMonth(selectedMonth - 1);
         }
         break;
+      default:
+        if (selectedMonth === 0) {
+          setSelectedYear(selectedYear - 1);
+          setSelectedMonth(11);
+        } else {
+          setSelectedMonth(selectedMonth - 1);
+        }
+        break;
     }
     fetchIncomeData();
   };
@@ -113,7 +121,7 @@ const Income = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
-    const currentDate = now.getDate();
+    
 
     switch(selectedInterval) {
       case INTERVAL_TYPES.DAILY:
@@ -141,7 +149,17 @@ const Income = () => {
         if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
           if (selectedMonth === 11) {
             setSelectedYear(selectedYear + 1);
-            setSelectedMonth(0);
+            setSelectedMonth(selectedMonth + 1);
+          } else {
+            setSelectedMonth(selectedMonth + 1);
+          }
+        }
+        break;
+      default:
+        if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
+          if (selectedMonth === 11) {
+            setSelectedYear(selectedYear + 1);
+            setSelectedMonth(selectedMonth + 1);
           } else {
             setSelectedMonth(selectedMonth + 1);
           }
@@ -190,6 +208,13 @@ const Income = () => {
           endDate.setHours(23, 59, 59, 999);
           break;
         case INTERVAL_TYPES.MONTHLY:
+          // 선택한 달의 데이터
+          startDate = new Date(selectedYear, selectedMonth, 1);
+          endDate = new Date(selectedYear, selectedMonth + 1, 0);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        default:
           // 선택한 달의 데이터
           startDate = new Date(selectedYear, selectedMonth, 1);
           endDate = new Date(selectedYear, selectedMonth + 1, 0);
@@ -265,11 +290,19 @@ const Income = () => {
         break;
 
       case INTERVAL_TYPES.MONTHLY:
-        const startDate = new Date(selectedYear, selectedMonth, 1);
         const endDate = new Date(selectedYear, selectedMonth + 1, 0);
         const daysInMonth = endDate.getDate();
         
         for (let i = 1; i <= daysInMonth; i++) {
+          dateLabels.push(i.toString());
+        }
+        break;
+
+      default:
+        const defaultEndDate = new Date(selectedYear, selectedMonth + 1, 0);
+        const defaultDaysInMonth = defaultEndDate.getDate();
+        
+        for (let i = 1; i <= defaultDaysInMonth; i++) {
           dateLabels.push(i.toString());
         }
         break;
@@ -323,6 +356,20 @@ const Income = () => {
         });
       
       case INTERVAL_TYPES.MONTHLY:
+        return dateLabels.map((day) => {
+          const dayStart = new Date(selectedYear, selectedMonth, parseInt(day));
+          const dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          
+          return chartSortedData
+            .filter(item => {
+              const itemDate = new Date(item.time);
+              return itemDate >= dayStart && itemDate < dayEnd;
+            })
+            .reduce((sum, item) => sum + parseFloat(item.income), 0);
+        });
+
+      default:
         return dateLabels.map((day) => {
           const dayStart = new Date(selectedYear, selectedMonth, parseInt(day));
           const dayEnd = new Date(dayStart);
