@@ -27,6 +27,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import axios from 'axios';
 import { getToken } from '../service/AuthService';
 import { getUser } from '../service/AuthService';
@@ -43,21 +45,111 @@ ChartJS.register(
 
 const contentUrl = process.env.REACT_APP_contentUrl;
 
-const INCOME_TYPES = [
-  'ALL',
-  'TRANSFER',
-  'REALIZED_PNL',
-  'FUNDING_FEE',
-  'COMMISSION'
-];
+const INCOME_TYPES = {
+  PNL: 'REALIZED_PNL',
+  TRANSFER: 'TRANSFER',
+  FUNDING: 'FUNDING_FEE',
+  COMMISSION: 'COMMISSION',
+  ALL: 'ALL'
+};
+
+const INTERVAL_TYPES = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly'
+};
 
 const Income = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedType, setSelectedType] = useState('ALL');
+  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedType, setSelectedType] = useState(INCOME_TYPES.PNL);
+  const [selectedInterval, setSelectedInterval] = useState(INTERVAL_TYPES.DAILY);
   const [incomeList, setIncomeList] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(false);
+  const [tempFilter, setTempFilter] = useState({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+    day: new Date().getDate(),
+    week: 1,
+    type: INCOME_TYPES.PNL,
+    interval: INTERVAL_TYPES.DAILY
+  });
+
+  const handlePrevPeriod = () => {
+    switch(selectedInterval) {
+      case INTERVAL_TYPES.DAILY:
+        const prevDay = new Date(selectedYear, selectedMonth, selectedDay - 1);
+        setSelectedYear(prevDay.getFullYear());
+        setSelectedMonth(prevDay.getMonth());
+        setSelectedDay(prevDay.getDate());
+        break;
+      case INTERVAL_TYPES.WEEKLY:
+        const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
+        const currentDay = currentDate.getDay();
+        const currentDiff = currentDate.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+        const prevWeekStart = new Date(currentDate);
+        prevWeekStart.setDate(currentDiff - 7);
+        
+        setSelectedYear(prevWeekStart.getFullYear());
+        setSelectedMonth(prevWeekStart.getMonth());
+        setSelectedDay(prevWeekStart.getDate());
+        break;
+      case INTERVAL_TYPES.MONTHLY:
+        if (selectedMonth === 0) {
+          setSelectedYear(selectedYear - 1);
+          setSelectedMonth(11);
+        } else {
+          setSelectedMonth(selectedMonth - 1);
+        }
+        break;
+    }
+    fetchIncomeData();
+  };
+
+  const handleNextPeriod = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDate = now.getDate();
+
+    switch(selectedInterval) {
+      case INTERVAL_TYPES.DAILY:
+        const nextDay = new Date(selectedYear, selectedMonth, selectedDay + 1);
+        if (nextDay <= now) {
+          setSelectedYear(nextDay.getFullYear());
+          setSelectedMonth(nextDay.getMonth());
+          setSelectedDay(nextDay.getDate());
+        }
+        break;
+      case INTERVAL_TYPES.WEEKLY:
+        const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
+        const currentDay = currentDate.getDay();
+        const currentDiff = currentDate.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+        const nextWeekStart = new Date(currentDate);
+        nextWeekStart.setDate(currentDiff + 7);
+        
+        if (nextWeekStart <= now) {
+          setSelectedYear(nextWeekStart.getFullYear());
+          setSelectedMonth(nextWeekStart.getMonth());
+          setSelectedDay(nextWeekStart.getDate());
+        }
+        break;
+      case INTERVAL_TYPES.MONTHLY:
+        if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
+          if (selectedMonth === 11) {
+            setSelectedYear(selectedYear + 1);
+            setSelectedMonth(0);
+          } else {
+            setSelectedMonth(selectedMonth + 1);
+          }
+        }
+        break;
+    }
+    fetchIncomeData();
+  };
 
   const fetchIncomeData = useCallback(() => {
     const token = getToken();
@@ -73,13 +165,49 @@ const Income = () => {
       }
     };
 
-    // 선택한 월의 다음 달 1일을 기준으로 이전 달의 데이터를 가져옴
-    const selectedDate = new Date(selectedYear, selectedMonth + 1, 1);
+    // 선택한 간격에 따라 시작일과 종료일 계산
+    const getDateRange = () => {
+      let startDate, endDate;
+
+      switch(selectedInterval) {
+        case INTERVAL_TYPES.DAILY:
+          // 선택한 날의 데이터
+          startDate = new Date(selectedYear, selectedMonth, selectedDay);
+          endDate = new Date(startDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case INTERVAL_TYPES.WEEKLY:
+          // 선택한 주의 데이터
+          const selectedDate = new Date(selectedYear, selectedMonth, selectedDay);
+          const day = selectedDate.getDay();
+          const diff = selectedDate.getDate() - day + (day === 0 ? -6 : 1); // 월요일
+          startDate = new Date(selectedDate);
+          startDate.setDate(diff);
+          endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 6);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case INTERVAL_TYPES.MONTHLY:
+          // 선택한 달의 데이터
+          startDate = new Date(selectedYear, selectedMonth, 1);
+          endDate = new Date(selectedYear, selectedMonth + 1, 0);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+      }
+      return { startDate, endDate };
+    };
+
+    const { startDate, endDate } = getDateRange();
+
     const requestBody = {
       user_id: user.user_id,
       token: token,
       type: 'income',
-      timestamp: selectedDate.getTime()
+      startTime: startDate.getTime(),
+      endTime: endDate.getTime()
     };
 
     axios.post(contentUrl, requestBody, requestConfig)
@@ -92,7 +220,7 @@ const Income = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, selectedInterval, selectedDay]);
 
   useEffect(() => {
     fetchIncomeData();
@@ -103,37 +231,114 @@ const Income = () => {
   const incomeData = incomeList.data || [];
   
   // 테이블용 필터링된 데이터
-  const filteredData = selectedType === 'ALL' 
+  const filteredData = selectedType === INCOME_TYPES.ALL 
     ? incomeData 
     : incomeData.filter(item => item.incomeType === selectedType);
 
-  // 선택된 월의 시작일과 마지막 날 계산
-  const startDate = new Date(selectedYear, selectedMonth, 1);
-  const endDate = new Date(selectedYear, selectedMonth + 1, 0);
-  
-  // 일정한 간격의 날짜 배열 생성 (10개 구간)
-  const dateLabels = [];
-  const interval = Math.ceil((endDate - startDate) / 9); // 9개 구간으로 나누기 위해 10개의 점 생성
-  for (let i = 0; i < 10; i++) {
-    const date = new Date(startDate.getTime() + interval * i);
-    dateLabels.push(date.toLocaleDateString());
-  }
+  // 일정한 간격의 날짜 배열 생성
+  const getDateLabels = () => {
+    const dateLabels = [];
+    
+    switch(selectedInterval) {
+      case INTERVAL_TYPES.DAILY:
+        // 선택된 날짜의 24시간 데이터
+        const selectedDate = new Date(selectedYear, selectedMonth, selectedDay);
+        for (let i = 0; i < 24; i++) {
+          const date = new Date(selectedDate);
+          date.setHours(i);
+          dateLabels.push(date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+        }
+        break;
+
+      case INTERVAL_TYPES.WEEKLY:
+        // 선택된 날짜가 속한 주의 월요일부터 일요일까지
+        const weekStart = new Date(selectedYear, selectedMonth, selectedDay);
+        const day = weekStart.getDay();
+        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        weekStart.setDate(diff);
+        
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(weekStart);
+          date.setDate(date.getDate() + i);
+          dateLabels.push(date.toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }));
+        }
+        break;
+
+      case INTERVAL_TYPES.MONTHLY:
+        const startDate = new Date(selectedYear, selectedMonth, 1);
+        const endDate = new Date(selectedYear, selectedMonth + 1, 0);
+        const daysInMonth = endDate.getDate();
+        
+        for (let i = 1; i <= daysInMonth; i++) {
+          dateLabels.push(i.toString());
+        }
+        break;
+    }
+    return dateLabels;
+  };
+
+  const dateLabels = getDateLabels();
 
   // 그래프용 데이터 처리
-  const chartSortedData = [...incomeData]
+  const chartSortedData = [...filteredData]
     .sort((a, b) => a.time - b.time);
 
   // 각 구간별 수익 데이터 계산
-  const intervalData = dateLabels.map((_, index) => {
-    const intervalStart = index === 0 ? startDate.getTime() : startDate.getTime() + interval * index;
-    const intervalEnd = index === 9 ? endDate.getTime() : startDate.getTime() + interval * (index + 1);
+  const getIntervalData = () => {
+    const dateLabels = getDateLabels();
     
-    const intervalIncome = chartSortedData
-      .filter(item => item.time >= intervalStart && item.time < intervalEnd)
-      .reduce((sum, item) => sum + parseFloat(item.income), 0);
-    
-    return intervalIncome;
-  });
+    switch(selectedInterval) {
+      case INTERVAL_TYPES.DAILY:
+        return dateLabels.map((_, index) => {
+          const hourStart = new Date(selectedYear, selectedMonth, selectedDay, index);
+          const hourEnd = new Date(hourStart);
+          hourEnd.setHours(hourEnd.getHours() + 1);
+          
+          return chartSortedData
+            .filter(item => {
+              const itemDate = new Date(item.time);
+              return itemDate >= hourStart && itemDate < hourEnd;
+            })
+            .reduce((sum, item) => sum + parseFloat(item.income), 0);
+        });
+      
+      case INTERVAL_TYPES.WEEKLY:
+        const weekStart = new Date(selectedYear, selectedMonth, selectedDay);
+        const day = weekStart.getDay();
+        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        weekStart.setDate(diff);
+        
+        return dateLabels.map((_, index) => {
+          const dayStart = new Date(weekStart);
+          dayStart.setDate(dayStart.getDate() + index);
+          const dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          
+          return chartSortedData
+            .filter(item => {
+              const itemDate = new Date(item.time);
+              return itemDate >= dayStart && itemDate < dayEnd;
+            })
+            .reduce((sum, item) => sum + parseFloat(item.income), 0);
+        });
+      
+      case INTERVAL_TYPES.MONTHLY:
+        return dateLabels.map((day) => {
+          const dayStart = new Date(selectedYear, selectedMonth, parseInt(day));
+          const dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          
+          return chartSortedData
+            .filter(item => {
+              const itemDate = new Date(item.time);
+              return itemDate >= dayStart && itemDate < dayEnd;
+            })
+            .reduce((sum, item) => sum + parseFloat(item.income), 0);
+        });
+    }
+  };
+
+  const intervalData = getIntervalData();
 
   let accumulator = 0;
   const chartData = {
@@ -144,6 +349,7 @@ const Income = () => {
         data: intervalData,
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
+        tension: 0.4,
         yAxisID: 'y',
       },
       {
@@ -154,12 +360,21 @@ const Income = () => {
         }),
         borderColor: 'rgb(53, 162, 235)',
         backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        tension: 0.4,
         yAxisID: 'y1',
       }
     ]
   };
 
   const handleFilterOpen = () => {
+    setTempFilter({
+      year: selectedYear,
+      month: selectedMonth,
+      day: selectedDay,
+      week: selectedWeek,
+      type: selectedType,
+      interval: selectedInterval
+    });
     setOpenFilter(true);
   };
 
@@ -168,20 +383,38 @@ const Income = () => {
   };
 
   const handleFilterChange = (type, value) => {
-    switch(type) {
-      case 'year':
-        setSelectedYear(value);
-        break;
-      case 'month':
-        setSelectedMonth(value);
-        break;
-      case 'type':
-        setSelectedType(value);
-        break;
-      default:
-        break;
-    }
+    setTempFilter(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
+  const handleFilterApply = () => {
+    setSelectedYear(tempFilter.year);
+    setSelectedMonth(tempFilter.month);
+    setSelectedDay(tempFilter.day);
+    setSelectedWeek(tempFilter.week);
+    setSelectedType(tempFilter.type);
+    setSelectedInterval(tempFilter.interval);
     handleFilterClose();
+    fetchIncomeData();
+  };
+
+  // 주차 계산 함수
+  const getWeekNumber = (date) => {
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const firstDayWeek = firstDay.getDay();
+    const firstWeekDays = 7 - firstDayWeek;
+    const dayOfMonth = date.getDate();
+    
+    if (dayOfMonth <= firstWeekDays) return 1;
+    return Math.ceil((dayOfMonth - firstWeekDays) / 7) + 1;
+  };
+
+  // 선택된 월의 주차 수 계산
+  const getWeeksInMonth = (year, month) => {
+    const lastDay = new Date(year, month + 1, 0);
+    return getWeekNumber(lastDay);
   };
 
   const formatDate = (timestamp) => {
@@ -205,7 +438,7 @@ const Income = () => {
       },
       title: {
         display: true,
-        text: `${selectedYear}년 ${selectedMonth + 1}월 수익 내역`
+        text: `${selectedYear}년 ${selectedMonth + 1}월 ${selectedInterval === INTERVAL_TYPES.DAILY ? selectedDay + '일' : selectedInterval === INTERVAL_TYPES.WEEKLY ? selectedWeek + '째주' : '월별'} 수익 내역`
       },
       tooltip: {
         callbacks: {
@@ -219,7 +452,7 @@ const Income = () => {
       x: {
         title: {
           display: true,
-          text: 'Date'
+          text: selectedInterval === INTERVAL_TYPES.DAILY ? '시간' : '날짜'
         }
       },
       y: {
@@ -256,6 +489,7 @@ const Income = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           {/* 차트 */}
           <Paper sx={{ p: 2, mb: 3, height: '400px', flexShrink: 0, position: 'relative' }}>
+            {/* 필터 버튼 */}
             <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}>
               <Button
                 onClick={handleFilterOpen}
@@ -269,6 +503,46 @@ const Income = () => {
                 }}
               >
                 <FilterListIcon />
+              </Button>
+            </Box>
+            {/* 이전/다음 버튼 */}
+            <Box sx={{ 
+              position: 'absolute', 
+              top: 12, 
+              left: '50%', 
+              transform: 'translateX(-50%)', 
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 20
+            }}>
+              <Button
+                onClick={handlePrevPeriod}
+                sx={{
+                  minWidth: 'auto',
+                  p: 1,
+                  color: 'rgba(0, 0, 0, 0.4)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    color: 'rgba(0, 0, 0, 0.6)'
+                  }
+                }}
+              >
+                <ArrowBackIosNewIcon />
+              </Button>
+              <Button
+                onClick={handleNextPeriod}
+                sx={{
+                  minWidth: 'auto',
+                  p: 1,
+                  color: 'rgba(0, 0, 0, 0.4)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    color: 'rgba(0, 0, 0, 0.6)'
+                  }
+                }}
+              >
+                <ArrowForwardIosIcon />
               </Button>
             </Box>
             <Line 
@@ -356,19 +630,25 @@ const Income = () => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>간격</InputLabel>
+              <Select
+                value={tempFilter.interval}
+                label="간격"
+                onChange={(e) => handleFilterChange('interval', e.target.value)}
+                disabled={loading}
+              >
+                <MenuItem value={INTERVAL_TYPES.DAILY}>일별</MenuItem>
+                <MenuItem value={INTERVAL_TYPES.WEEKLY}>주별</MenuItem>
+                <MenuItem value={INTERVAL_TYPES.MONTHLY}>월별</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>연도</InputLabel>
               <Select
-                value={selectedYear}
+                value={tempFilter.year}
                 label="연도"
                 onChange={(e) => handleFilterChange('year', e.target.value)}
                 disabled={loading}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 224, // 5개 항목이 보이는 높이 (56px * 4)
-                    },
-                  },
-                }}
               >
                 {[...Array(5)].map((_, index) => {
                   const year = new Date().getFullYear() - index;
@@ -383,17 +663,10 @@ const Income = () => {
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>월</InputLabel>
               <Select
-                value={selectedMonth}
+                value={tempFilter.month}
                 label="월"
                 onChange={(e) => handleFilterChange('month', e.target.value)}
                 disabled={loading}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 224, // 5개 항목이 보이는 높이 (56px * 4)
-                    },
-                  },
-                }}
               >
                 {[...Array(12)].map((_, index) => (
                   <MenuItem key={index} value={index}>
@@ -402,28 +675,63 @@ const Income = () => {
                 ))}
               </Select>
             </FormControl>
+            {tempFilter.interval === INTERVAL_TYPES.DAILY && (
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>일</InputLabel>
+                <Select
+                  value={tempFilter.day}
+                  label="일"
+                  onChange={(e) => handleFilterChange('day', e.target.value)}
+                  disabled={loading}
+                >
+                  {[...Array(new Date(tempFilter.year, tempFilter.month + 1, 0).getDate())].map((_, index) => (
+                    <MenuItem key={index + 1} value={index + 1}>
+                      {index + 1}일
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            {tempFilter.interval === INTERVAL_TYPES.WEEKLY && (
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>주차</InputLabel>
+                <Select
+                  value={tempFilter.week}
+                  label="주차"
+                  onChange={(e) => handleFilterChange('week', e.target.value)}
+                  disabled={loading}
+                >
+                  {[...Array(getWeeksInMonth(tempFilter.year, tempFilter.month))].map((_, index) => (
+                    <MenuItem key={index + 1} value={index + 1}>
+                      {index + 1}째주
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>타입</InputLabel>
               <Select
-                value={selectedType}
+                value={tempFilter.type}
                 label="타입"
                 onChange={(e) => handleFilterChange('type', e.target.value)}
                 disabled={loading}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 224, // 5개 항목이 보이는 높이 (56px * 4)
-                    },
-                  },
-                }}
               >
-                {INCOME_TYPES.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type === 'ALL' ? '전체' : type}
-                  </MenuItem>
-                ))}
+                <MenuItem value={INCOME_TYPES.ALL}>모두</MenuItem>
+                <MenuItem value={INCOME_TYPES.PNL}>PnL</MenuItem>
+                <MenuItem value={INCOME_TYPES.TRANSFER}>이체</MenuItem>
+                <MenuItem value={INCOME_TYPES.FUNDING}>Funding Fee</MenuItem>
+                <MenuItem value={INCOME_TYPES.COMMISSION}>수수료</MenuItem>
               </Select>
             </FormControl>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+              <Button onClick={handleFilterClose} variant="outlined">
+                취소
+              </Button>
+              <Button onClick={handleFilterApply} variant="contained" color="primary">
+                적용
+              </Button>
+            </Box>
           </Box>
         </DialogContent>
       </Dialog>
