@@ -117,7 +117,7 @@ const Home = () => {
                       <Typography sx={{ mb: 1 }}>Epsilon: {data.learning_params.epsilon}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Epochs: {data.learning_params.epochs}</Typography>
+                      <Typography sx={{ mb: 1 }}>Alpha: {data.learning_params.alpha}</Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography sx={{ mb: 1 }}>Batch Size: {data.learning_params.batch_size}</Typography>
