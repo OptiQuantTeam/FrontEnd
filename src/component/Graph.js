@@ -105,6 +105,12 @@ const Graph = () => {
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
           break;
+        default:
+          startDate = new Date(selectedYear, selectedMonth, 1);
+          endDate = new Date(selectedYear, selectedMonth + 1, 0);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          break;
       }
       return { startDate, endDate };
     };
@@ -173,6 +179,14 @@ const Graph = () => {
           setSelectedMonth(selectedMonth - 1);
         }
         break;
+      default:
+        if (selectedMonth === 0) {
+          setSelectedYear(selectedYear - 1);
+          setSelectedMonth(11);
+        } else {
+          setSelectedMonth(selectedMonth - 1);
+        }
+        break;
     }
   };
 
@@ -180,7 +194,6 @@ const Graph = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
-    const currentDate = now.getDate();
 
     switch(selectedInterval) {
       case INTERVAL_TYPES.DAILY:
@@ -205,6 +218,16 @@ const Graph = () => {
         }
         break;
       case INTERVAL_TYPES.MONTHLY:
+        if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
+          if (selectedMonth === 11) {
+            setSelectedYear(selectedYear + 1);
+            setSelectedMonth(0);
+          } else {
+            setSelectedMonth(selectedMonth + 1);
+          }
+        }
+        break;
+      default:
         if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
           if (selectedMonth === 11) {
             setSelectedYear(selectedYear + 1);
@@ -340,6 +363,28 @@ const Graph = () => {
         const daysInMonth = endDate.getDate();
         
         for (let i = 1; i <= daysInMonth; i++) {
+          dateLabels.push(i.toString());
+          
+          const dayStart = new Date(selectedYear, selectedMonth, i);
+          const dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+          
+          const dayIncome = sortedIncomeData
+            .filter(item => {
+              const itemDate = new Date(item.time);
+              return itemDate >= dayStart && itemDate < dayEnd;
+            })
+            .reduce((sum, item) => sum + parseFloat(item.income), 0);
+          
+          balanceData.push(currentBalance + dayIncome);
+        }
+        break;
+      default:
+        startDate = new Date(selectedYear, selectedMonth, 1);
+        endDate = new Date(selectedYear, selectedMonth + 1, 0);
+        const defaultDaysInMonth = endDate.getDate();
+        
+        for (let i = 1; i <= defaultDaysInMonth; i++) {
           dateLabels.push(i.toString());
           
           const dayStart = new Date(selectedYear, selectedMonth, i);
