@@ -65,34 +65,34 @@ const Home = () => {
           <Grid container spacing={4} sx={{ mb: 6 }}>
             <Grid item xs={12} md={3}>
               <StatCard 
-                title="최고 수익률" 
-                value={`${data?.profit_rate_stats?.best_profit_rate?.toFixed(2) || '0.00'}%`}
-                icon={<TrendingUpIcon color="success" />}
-                color="success.main"
+                title="예상 수익률" 
+                value={`${data?.performance_metrics?.profit_rate?.toFixed(2) || '0.00'}%`}
+                icon={<TrendingUpIcon color={(data?.performance_metrics?.profit_rate || 0) >= 0 ? "success" : "error"} />}
+                color={(data?.performance_metrics?.profit_rate || 0) >= 0 ? "success.main" : "error.main"}
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <StatCard 
-                title="평균 수익률" 
-                value={`${data?.profit_rate_stats?.mean_profit_rate?.toFixed(2) || '0.00'}%`}
-                icon={<TimelineIcon color={(data?.profit_rate_stats?.mean_profit_rate || 0) >= 0 ? "success" : "error"} />}
-                color={(data?.profit_rate_stats?.mean_profit_rate || 0) >= 0 ? "success.main" : "error.main"}
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <StatCard 
-                title="최고 거래 성공률" 
-                value={`${((data?.training_results?.max_episode_win_rate || 0) * 100).toFixed(2)}%`}
-                icon={<AssessmentIcon color="warning" />}
+                title="거래 최대 수익률" 
+                value={`${data?.trading_statistics?.max_profit_rate?.toFixed(2) || '0.00'}%`}
+                icon={<TimelineIcon color="warning" />}
                 color="warning.main"
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <StatCard 
-                title="평균 거래 성공률" 
-                value={`${((data?.training_results?.mean_episode_win_rate || 0) * 100).toFixed(2)}%`}
-                icon={<AssessmentIcon color={(data?.training_results?.mean_episode_win_rate || 0) >= 0.5 ? "success" : "info"} />}
-                color={(data?.training_results?.mean_episode_win_rate || 0) >= 0.5 ? "success.main" : "info.main"}
+                title="거래 평균 수익률" 
+                value={`${data?.trading_statistics?.average_profit_rate?.toFixed(2) || '0.00'}%`}
+                icon={<AssessmentIcon color="info" />}
+                color="info.main"
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <StatCard 
+                title="수익 거래 수" 
+                value={`${data?.performance_metrics?.profitable_trades || '0'}`}
+                icon={<AssessmentIcon color="success" />}
+                color="success.main"
               />
             </Grid>
           </Grid>
@@ -105,28 +105,34 @@ const Home = () => {
                 <Box sx={{ mt: 2 }}>
                   <Grid container spacing={0}>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>State Dimension: {data.learning_params.state_dim}</Typography>
+                      <Typography sx={{ mb: 1 }}>State Dimension: {data?.learning_params?.state_dim || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Action Dimension: {data.learning_params.action_dim}</Typography>
+                      <Typography sx={{ mb: 1 }}>Action Dimension: {data?.learning_params?.action_dim || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Gamma: {data.learning_params.gamma}</Typography>
+                      <Typography sx={{ mb: 1 }}>Gamma: {data?.learning_params?.gamma?.toFixed(4) || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Epsilon: {data.learning_params.epsilon}</Typography>
+                      <Typography sx={{ mb: 1 }}>Epsilon: {data?.learning_params?.epsilon?.toFixed(4) || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Alpha: {data.learning_params.alpha}</Typography>
+                      <Typography sx={{ mb: 1 }}>Epochs: {data?.learning_params?.epochs || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Batch Size: {data.learning_params.batch_size}</Typography>
+                      <Typography sx={{ mb: 1 }}>Batch Size: {data?.learning_params?.batch_size || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Actor LR: {data.learning_params.lr_actor}</Typography>
+                      <Typography sx={{ mb: 1 }}>Actor LR: {data?.learning_params?.lr_actor?.toExponential(4) || '-'}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography sx={{ mb: 1 }}>Critic LR: {data.learning_params.lr_critic}</Typography>
+                      <Typography sx={{ mb: 1 }}>Critic LR: {data?.learning_params?.lr_critic?.toExponential(4) || '-'}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography sx={{ mb: 1 }}>Alpha: {data?.learning_params?.alpha?.toFixed(4) || '-'}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography sx={{ mb: 1 }}>Device: {data?.learning_params?.device || '-'}</Typography>
                     </Grid>
                   </Grid>
                 </Box>
@@ -134,12 +140,13 @@ const Home = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <Paper elevation={3} sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>세션 정보</Typography>
+                <Typography variant="h6" gutterBottom>거래 통계</Typography>
                 <Box sx={{ mt: 2 }}>
-                  <Typography>Start Time: {data.session_info.start_time}</Typography>
-                  <Typography>End Time: {data.session_info.session_time}</Typography>
-                  <Typography>Training Sessions: {data.session_info.training_sessions}</Typography>
-                  <Typography>Total Episodes: {data.session_info.total_episodes_all_sessions}</Typography>
+                  <Typography sx={{ mb: 1 }}>롱 포지션: {data?.trading_statistics?.long_positions || '0'}</Typography>
+                  <Typography sx={{ mb: 1 }}>숏 포지션: {data?.trading_statistics?.short_positions || '0'}</Typography>
+                  <Typography sx={{ mb: 1 }}>중립 포지션: {data?.trading_statistics?.neutral_positions || '0'}</Typography>
+                  <Typography sx={{ mb: 1 }}>연속 승리: {data?.trading_statistics?.consecutive_wins || '0'}</Typography>
+                  <Typography sx={{ mb: 1 }}>연속 손실: {data?.trading_statistics?.consecutive_losses || '0'}</Typography>
                 </Box>
               </Paper>
             </Grid>
