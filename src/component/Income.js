@@ -96,6 +96,7 @@ const Income = () => {
         setSelectedYear(prevWeekStart.getFullYear());
         setSelectedMonth(prevWeekStart.getMonth());
         setSelectedDay(prevWeekStart.getDate());
+        setSelectedWeek(getWeekNumber(prevWeekStart));
         break;
       case INTERVAL_TYPES.MONTHLY:
         if (selectedMonth === 0) {
@@ -143,13 +144,14 @@ const Income = () => {
           setSelectedYear(nextWeekStart.getFullYear());
           setSelectedMonth(nextWeekStart.getMonth());
           setSelectedDay(nextWeekStart.getDate());
+          setSelectedWeek(getWeekNumber(nextWeekStart));
         }
         break;
       case INTERVAL_TYPES.MONTHLY:
         if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
           if (selectedMonth === 11) {
             setSelectedYear(selectedYear + 1);
-            setSelectedMonth(selectedMonth + 1);
+            setSelectedMonth(0);
           } else {
             setSelectedMonth(selectedMonth + 1);
           }
@@ -159,7 +161,7 @@ const Income = () => {
         if (selectedYear < currentYear || (selectedYear === currentYear && selectedMonth < currentMonth)) {
           if (selectedMonth === 11) {
             setSelectedYear(selectedYear + 1);
-            setSelectedMonth(selectedMonth + 1);
+            setSelectedMonth(0);
           } else {
             setSelectedMonth(selectedMonth + 1);
           }
@@ -279,7 +281,7 @@ const Income = () => {
         // 선택된 날짜가 속한 주의 월요일부터 일요일까지
         const weekStart = new Date(selectedYear, selectedMonth, selectedDay);
         const day = weekStart.getDay();
-        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        const diff = selectedDay - day + (day === 0 ? -6 : 1);
         weekStart.setDate(diff);
         
         for (let i = 0; i < 7; i++) {
@@ -338,7 +340,7 @@ const Income = () => {
       case INTERVAL_TYPES.WEEKLY:
         const weekStart = new Date(selectedYear, selectedMonth, selectedDay);
         const day = weekStart.getDay();
-        const diff = weekStart.getDate() - day + (day === 0 ? -6 : 1);
+        const diff = selectedDay - day + (day === 0 ? -6 : 1);
         weekStart.setDate(diff);
         
         return dateLabels.map((_, index) => {
@@ -437,10 +439,27 @@ const Income = () => {
   };
 
   const handleFilterApply = () => {
-    setSelectedYear(tempFilter.year);
-    setSelectedMonth(tempFilter.month);
-    setSelectedDay(tempFilter.day);
-    setSelectedWeek(tempFilter.week);
+    if (tempFilter.interval === INTERVAL_TYPES.WEEKLY) {
+      // 선택된 주차에 해당하는 날짜 계산
+      const firstDayOfMonth = new Date(tempFilter.year, tempFilter.month, 1);
+      const firstDayWeek = firstDayOfMonth.getDay();
+      const firstMonday = new Date(firstDayOfMonth);
+      firstMonday.setDate(1 - (firstDayWeek === 0 ? 6 : firstDayWeek - 1));
+      
+      // 선택된 주차의 월요일 계산
+      const selectedMonday = new Date(firstMonday);
+      selectedMonday.setDate(firstMonday.getDate() + (tempFilter.week - 1) * 7);
+      
+      setSelectedYear(selectedMonday.getFullYear());
+      setSelectedMonth(selectedMonday.getMonth());
+      setSelectedDay(selectedMonday.getDate());
+      setSelectedWeek(tempFilter.week);
+    } else {
+      setSelectedYear(tempFilter.year);
+      setSelectedMonth(tempFilter.month);
+      setSelectedDay(tempFilter.day);
+      setSelectedWeek(tempFilter.week);
+    }
     setSelectedType(tempFilter.type);
     setSelectedInterval(tempFilter.interval);
     handleFilterClose();
@@ -449,19 +468,47 @@ const Income = () => {
 
   // 주차 계산 함수
   const getWeekNumber = (date) => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const firstDayWeek = firstDay.getDay();
-    const firstWeekDays = 7 - firstDayWeek;
-    const dayOfMonth = date.getDate();
+    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     
-    if (dayOfMonth <= firstWeekDays) return 1;
-    return Math.ceil((dayOfMonth - firstWeekDays) / 7) + 1;
+    // 월의 첫 날이 속한 주의 월요일
+    const firstMonday = new Date(firstDayOfMonth);
+    const firstDayWeek = firstDayOfMonth.getDay();
+    firstMonday.setDate(1 - (firstDayWeek === 0 ? 6 : firstDayWeek - 1));
+    
+    // 월의 마지막 날이 속한 주의 일요일
+    const lastSunday = new Date(lastDayOfMonth);
+    const lastDayWeek = lastDayOfMonth.getDay();
+    lastSunday.setDate(lastDayOfMonth.getDate() + (7 - lastDayWeek));
+    
+    // 해당 날짜가 속한 주의 월요일
+    const currentMonday = new Date(date);
+    const currentDayWeek = date.getDay();
+    currentMonday.setDate(date.getDate() - (currentDayWeek === 0 ? 6 : currentDayWeek - 1));
+    
+    // 주차 계산
+    const weekDiff = Math.floor((currentMonday - firstMonday) / (7 * 24 * 60 * 60 * 1000));
+    return weekDiff + 1;
   };
 
   // 선택된 월의 주차 수 계산
   const getWeeksInMonth = (year, month) => {
-    const lastDay = new Date(year, month + 1, 0);
-    return getWeekNumber(lastDay);
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    
+    // 월의 첫 날이 속한 주의 월요일
+    const firstMonday = new Date(firstDayOfMonth);
+    const firstDayWeek = firstDayOfMonth.getDay();
+    firstMonday.setDate(1 - (firstDayWeek === 0 ? 6 : firstDayWeek - 1));
+    
+    // 월의 마지막 날이 속한 주의 일요일
+    const lastSunday = new Date(lastDayOfMonth);
+    const lastDayWeek = lastDayOfMonth.getDay();
+    lastSunday.setDate(lastDayOfMonth.getDate() + (7 - lastDayWeek));
+    
+    // 전체 주차 수 계산
+    const weekDiff = Math.floor((lastSunday - firstMonday) / (7 * 24 * 60 * 60 * 1000));
+    return weekDiff;
   };
 
   const formatDate = (timestamp) => {
